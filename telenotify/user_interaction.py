@@ -1,38 +1,103 @@
 import time
 import requests
+from datetime import datetime
 
 from telenotify import telegram_bots
 
+MAX_RETRY = 10
 MAX_WAIT = 60
 INCREMENT_WAIT = 1
+offset = None
+
+WEB_URL = "https://api.telegram.org/bot"
+
+def log_error(msg):
+    now = datetime.now()
+    timestamp = f"{now.year}-{now.month}-{now.day} {now.hour}:{now.minute}:{now.second}"
+    print(f"[{timestamp}]{msg.strip()}")
+
+
+def post_request(method,data,files=None):
+    global WEB_URL
+    try:
+        return requests.post(f"{WEB_URL}{telegram_bots.get_token()}/{method}",data=body, files=files)
+    except requests.exceptions.Timeout:
+        return 'Timeout'
+    except requests.exceptions.TooManyRedirects:
+        return '2Redir'
+    except requests.ConnectionError as e:
+        if 'MaxRetryError' not in str(e.args) or 'NewConnectionError' not in str(e.args):
+            return 'DNS_DOWN'
+        if "[Errno 8]" in str(e) or "[Errno 11001]" in str(e) or "[Errno -2]" in str(e):
+            return 'DNS_DOWN'
+        else:
+            return 'conn_error' 
+
+
+def get_request(method,params=''):
+    global WEB_URL
+    try:
+        return requests.get(f"{WEB_URL}{telegram_bots.get_token()}/{method}?{params}}")
+    except requests.exceptions.Timeout:
+        return 'Timeout'
+    except requests.exceptions.TooManyRedirects:
+        return '2Redir'
+    except requests.ConnectionError as e:
+        if 'MaxRetryError' not in str(e.args) or 'NewConnectionError' not in str(e.args):
+            return 'DNS_DOWN'
+        if "[Errno 8]" in str(e) or "[Errno 11001]" in str(e) or "[Errno -2]" in str(e):
+            return 'DNS_DOWN'
+        else:
+            return 'conn_error'
 
 
 def send_notification(message, bot_name=None):
     telegram_bots.select_bot(bot_name)
-    r = requests.get(f"https://api.telegram.org/bot{telegram_bots.get_token()}/sendMessage?chat_id={telegram_bots.get_chat()}&text={message}")
+    return get_request("sendMessage",f"chat_id={telegram_bots.get_chat()}&text={message}")
 
 
-def polling(bot_name=None, user_reminder = 0, offset=None, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):
+def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):
+    global offset
+    global MAX_RETRY
     telegram_bots.select_bot(bot_name)
-    if offset is None:
-        offset = get_last_offset()
+    offset = get_last_offset()
     start_wait = 5
     wait_interval = start_wait
     cycle = 0
+    fail_counts = 0
     while True:
-        body = {"offset": offset}
-        r = requests.post(f"https://api.telegram.org/bot{telegram_bots.get_token()}/getUpdates",data=body)
-
-        if r.status_code == 200:
-            results = r.json()['result']
-            for result in results:
-                if result['update_id'] > int(offset):
-                    wait_interval = start_wait
-                    cycle = 0
-                    offset = result['update_id']
-                    if 'message' in result:
+        r = post_request("getUpdates",data={"offset": offset})
+        
+        if type(r) == str:
+            #exception occurred
+            log_error(f"Exception:{r}")
+            wait_interval = max_wait
+            fail_counts = fail_counts + 1
+            if fail_counts > MAX_RETRY:
+                log_error("Cancelling polling")
+                return None
+        else:
+            if r.status_code == 200:
+                fail_counts = 0
+                results = r.json()['result']
+                for result in results:
+                    if result['update_id'] > int(offset):
+                        wait_interval = start_wait
+                        cycle = 0
+                        offset = result['update_id']
+                        if 'message' not in result:
+                            log_error(f"Message missing from response:{result}")
+                            continue
                         if result['message']['from']['username'] == telegram_bots.get_auth_user():
-                            return result['message']['text'], offset
+                            return result['message']['text']
+            else:
+                #error
+                log_error(f"HTTP error:{r.status_code}")
+                wait_interval = max_wait
+                fail_counts = fail_counts + 1
+                if fail_counts > MAX_RETRY:
+                    log_error("Cancelling polling")
+                    return None
         time.sleep(wait_interval)
         if wait_interval < max_wait:
             wait_interval = cycle * incremental_wait
@@ -46,23 +111,37 @@ def polling(bot_name=None, user_reminder = 0, offset=None, max_wait=MAX_WAIT, in
 
 def sendDocument(document_path):
     document = open(document_path, 'rb')
-    requests.post(F"https://api.telegram.org/bot{telegram_bots.get_token()}/sendDocument", data={'chat_id': telegram_bots.get_chat()}, files={'document': document})
+    r = post_request("sendDocument", data={'chat_id': telegram_bots.get_chat()}, files={'document': document})
     document.close()
+    return r
 
 
-
-def question(prompt, bot_name=None, user_reminder = 0, offset=None, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):
-    send_notification(prompt, bot_name)    
-    return polling(bot_name=bot_name, user_reminder = user_reminder, offset=offset, max_wait=max_wait, incremental_wait=incremental_wait)
+def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):
+    global MAX_WAIT
+    global MAX_RETRY
+    try_count = 0
+    while True:
+        try_count = try_count + 1
+        r = send_notification(prompt, bot_name)
+        if type(r) == str:
+            log_error(f"Failure asking:{prompt}\n{r}")
+            if MAX_RETRY > try_count:
+                raise Exception("Exceeded tries")
+            time.sleep(MAX_WAIT)
+            continue
+        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait)
 
 
 def get_last_offset():
-    r = requests.get(F"https://api.telegram.org/bot{telegram_bots.get_token()}/getUpdates")
-    results = r.json()['result']
-    offset = 0
-    if len(results) > 0:
-        for result in results:
-            offset = result['update_id']
+    global offset
+    #only necessary for the first run
+    if offset is None:
+        r = get_request("getUpdates")
+        results = r.json()['result']
+        offset = 0
+        if len(results) > 0:
+            for result in results:
+                offset = result['update_id']
     return offset
 
 
@@ -85,9 +164,8 @@ def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, 
                 if char.isupper() and char not in options and char not in short_options:
                     short_options[char] = option
 
-    offset = None
     while True:
-        response, offset = question(prompt=msg, bot_name=bot_name, user_reminder=user_reminder, offset=offset)
+        response = question(prompt=msg, bot_name=bot_name, user_reminder=user_reminder)
         if response in options or response in short_options:
             if response not in options:
                 response = short_options[response]
