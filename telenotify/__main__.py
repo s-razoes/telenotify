@@ -11,7 +11,7 @@ def main():
     if args.text == '':
         print("No text provided")
         quit(1)
-    user_interaction.send_notification(args.text)
+    user_interaction.send_notification(args.text,args.bot_name)
 
 if __name__ == "__main__":
     main()
