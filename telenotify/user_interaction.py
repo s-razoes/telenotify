@@ -85,7 +85,8 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
                         wait_interval = start_wait
                         cycle = 0
                         offset = result['update_id']
-                        if 'message' not in result:
+                        #stickers, emoji, etc
+                        if 'message' not in result or 'text' not in result['message']:
                             log_error(f"Message missing from response:{result}")
                             continue
                         if result['message']['from']['username'] == telegram_bots.get_auth_user():
