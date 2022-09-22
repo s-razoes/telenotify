@@ -30,8 +30,9 @@ def polling(bot_name=None, user_reminder = 0, offset=None, max_wait=MAX_WAIT, in
                     wait_interval = start_wait
                     cycle = 0
                     offset = result['update_id']
-                    if result['message']['from']['username'] == telegram_bots.get_auth_user():
-                        return result['message']['text'], offset
+                    if 'message' in result:
+                        if result['message']['from']['username'] == telegram_bots.get_auth_user():
+                            return result['message']['text'], offset
         time.sleep(wait_interval)
         if wait_interval < max_wait:
             wait_interval = cycle * incremental_wait
