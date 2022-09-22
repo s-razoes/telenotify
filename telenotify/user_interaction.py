@@ -37,7 +37,7 @@ def post_request(method,data,files=None):
 def get_request(method,params=''):
     global WEB_URL
     try:
-        return requests.get(f"{WEB_URL}{telegram_bots.get_token()}/{method}?{params}}")
+        return requests.get(f"{WEB_URL}{telegram_bots.get_token()}/{method}?{params}")
     except requests.exceptions.Timeout:
         return 'Timeout'
     except requests.exceptions.TooManyRedirects:
