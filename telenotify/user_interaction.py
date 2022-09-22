@@ -20,7 +20,7 @@ def log_error(msg):
 def post_request(method,data,files=None):
     global WEB_URL
     try:
-        return requests.post(f"{WEB_URL}{telegram_bots.get_token()}/{method}",data=body, files=files)
+        return requests.post(f"{WEB_URL}{telegram_bots.get_token()}/{method}",data=data, files=files)
     except requests.exceptions.Timeout:
         return 'Timeout'
     except requests.exceptions.TooManyRedirects:
