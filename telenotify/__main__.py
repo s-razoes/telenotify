@@ -4,8 +4,8 @@ from telenotify import user_interaction
 
 def main():
     parser = argparse.ArgumentParser(description='Send a notification via telegram.')
-    parser.add_argument('text', help='The text to send')
     parser.add_argument('bot_name', help='If you don\'t want the default bot, name it')
+    parser.add_argument('text', help='The text to send')
     args = parser.parse_args()
 
     if args.text == '':
