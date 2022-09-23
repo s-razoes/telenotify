@@ -1,6 +1,7 @@
 import time
 import requests
 from datetime import datetime
+import urllib.parse
 
 from telenotify import telegram_bots
 
@@ -52,6 +53,7 @@ def get_request(method,params=''):
 
 
 def send_notification(message, bot_name=None):
+    message = urllib.parse.quote(message.strip())
     telegram_bots.select_bot(bot_name)
     return get_request("sendMessage",f"chat_id={telegram_bots.get_chat()}&text={message}")
 
