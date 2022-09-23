@@ -83,10 +83,21 @@ def get_request(method,params=''):
             return 'conn_error'
 
 
-def send_notification(message, bot_name=None):
+def send_broadcast(message,bot_name=None):
+    telegram_bots.select_bot(bot_name)
+    for chat in telegram_bots.chats_list:
+        send_notification(message, bot_name=bot_name,chat=chat)
+
+
+def send_notification(message, bot_name=None,chat=None):
+    if message is None or message == '':
+        raise Exception('Empty messages not allowed')
     message = urllib.parse.quote(message.strip())
     telegram_bots.select_bot(bot_name)
-    return get_request("sendMessage",f"chat_id={telegram_bots.get_chat()}&text={message}")
+    if chat is not None:
+        telegram_bots.select_chat(chat)
+    chat_id = telegram_bots.get_chat()
+    return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
 
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):

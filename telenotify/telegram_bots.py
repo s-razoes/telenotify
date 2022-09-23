@@ -16,12 +16,13 @@ bots_jo = json.loads(template)
 
 selected_bot = bots_jo["default_bot"]
 selected_chat = bots_jo["default_chat"]
+chats_list = bots_jo['chats'][0]
 
 def get_token():
     return bots_jo[selected_bot][0]['TOKEN']
 
 def get_chat():
-    return bots_jo['chats'][0][selected_chat]
+    return chats_list[selected_chat]
 
 def get_auth_user():
     return bots_jo['user']
@@ -33,7 +34,7 @@ def select_chat(chat_name):
         return False
     if chat_name == '':
         return False
-    if chat_name not in bots_jo['chats'][0]:
+    if chat_name not in chats_list:
         return False
     selected_chat = chat_name
 
