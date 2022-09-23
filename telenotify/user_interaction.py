@@ -91,7 +91,8 @@ def send_notification(message, bot_name=None):
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):
     global MAX_RETRY
-    
+
+    telegram_bots.select_bot(bot_name)
     start_wait = 5
     wait_interval = start_wait
     cycle = 0
@@ -129,7 +130,8 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
             if cycle%user_reminder == 0:
                 send_notification(prompt)
 
-def sendDocument(document_path):
+def sendDocument(document_path, bot_name=None):
+    telegram_bots.select_bot(bot_name)
     document = open(document_path, 'rb')
     r = post_request("sendDocument", data={'chat_id': telegram_bots.get_chat()}, files={'document': document})
     document.close()
