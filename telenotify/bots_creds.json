@@ -1,10 +1,18 @@
 {
     "default_bot" : "THE DEFAULT BOT NAME",
     "user":"YOUR USERNAME",
-    "transito_jogos_bot" : [
+    "default_chat" : "chat1",
+    "chats": [{
+        "chat1":"CHAT_ID"
+        }],
+    "bot1" : [
         {
-            "TOKEN":"THE TOKEN WHEN THE BOT WAS CREATED",
-            "CHAT_ID":"THE CHAT ID"
+            "TOKEN":"THE TOKEN WHEN THE BOT WAS CREATED"
         }
-    ]
+    ],
+    "bot2" : [
+        {
+            "TOKEN":"THE TOKEN WHEN THE BOT WAS CREATED"
+        }
+    ],
 }

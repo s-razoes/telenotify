@@ -14,18 +14,29 @@ template = pkg_resources.read_text(telenotify, json_file_path)
 
 bots_jo = json.loads(template)
 
-default_bot = bots_jo["default_bot"]
-
-selected_bot = default_bot
+selected_bot = bots_jo["default_bot"]
+selected_chat = bots_jo["default_chat"]
 
 def get_token():
     return bots_jo[selected_bot][0]['TOKEN']
 
 def get_chat():
-    return bots_jo[selected_bot][0]['CHAT_ID']
+    return bots_jo['chats'][0][selected_chat]
 
 def get_auth_user():
     return bots_jo['user']
+
+
+def select_chat(chat_name):
+    global selected_chat
+    if chat_name is None:
+        return False
+    if chat_name == '':
+        return False
+    if chat_name not in bots_jo['chats'][0]:
+        return False
+    selected_chat = chat_name
+
 
 def select_bot(bot_name):
     global selected_bot
