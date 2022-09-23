@@ -176,7 +176,7 @@ def flush_chat():
     global offset
     offset = None
     chats = []
-    get_last_offset()
+
 
 #will wait for a response from the user and return the string of that choice
 def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, secret=False, prefix_msgs='Choice:', user_reminder = 0):
