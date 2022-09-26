@@ -8,7 +8,6 @@ except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
 
-#from telenotify.templates import templates  # relative-import the *package* containing the templates
 import telenotify
 template = pkg_resources.read_text(telenotify, json_file_path)
 
@@ -28,15 +27,16 @@ def get_auth_user():
     return bots_jo['user']
 
 
-def select_chat(chat_name):
+def select_chat(nickname):
     global selected_chat
-    if chat_name is None:
+    if nickname is None:
         return False
-    if chat_name == '':
+    if nickname == '':
         return False
-    if chat_name not in chats_list:
+    if nickname not in chats_list:
         return False
-    selected_chat = chat_name
+    selected_chat = nickname
+    return True
 
 
 def select_bot(bot_name):
@@ -48,3 +48,4 @@ def select_bot(bot_name):
     if bot_name not in bots_jo:
         return False
     selected_bot = bot_name
+    return True

@@ -83,24 +83,29 @@ def get_request(method,params=''):
             return 'conn_error'
 
 
-def send_broadcast(message,bot_name=None):
+def send_broadcast(message,bot_name=None, parse_mode=None):
     telegram_bots.select_bot(bot_name)
     for chat in telegram_bots.chats_list:
-        send_notification(message, bot_name=bot_name,chat=chat)
+        send_notification(message, bot_name=bot_name,nickname=chat, parse_mode=parse_mode)
 
 
-def send_notification(message, bot_name=None,chat=None):
+def send_notification(message, bot_name=None,nickname=None, parse_mode=None):
     if message is None or message == '':
         raise Exception('Empty messages not allowed')
     message = urllib.parse.quote(message.strip())
     telegram_bots.select_bot(bot_name)
-    if chat is not None:
-        telegram_bots.select_chat(chat)
+    telegram_bots.select_chat(nickname)
     chat_id = telegram_bots.get_chat()
-    return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
+    data = {}
+    data["chat_id"] = chat_id
+    data["text"] = message
+    if parse_mode is not None:
+        data["parse_mode"]=parse_mode
+    return post_request("sendMessage", data)
+    #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
 
 
-def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT):
+def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None):
     global MAX_RETRY
 
     telegram_bots.select_bot(bot_name)
@@ -139,7 +144,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
 
         if user_reminder > 0:
             if cycle%user_reminder == 0:
-                send_notification(prompt)
+                send_notification(prompt, parse_mode=parse_mode)
 
 def sendDocument(document_path, bot_name=None):
     telegram_bots.select_bot(bot_name)
@@ -149,7 +154,7 @@ def sendDocument(document_path, bot_name=None):
     return r
 
 
-def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False):
+def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None):
     global MAX_WAIT
     global MAX_RETRY
     if flush:
@@ -157,14 +162,14 @@ def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, increm
     try_count = 0
     while True:
         try_count = try_count + 1
-        r = send_notification(prompt, bot_name)
+        r = send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode)
         if type(r) == str:
             log_error(f"Failure asking:{prompt}\n{r}")
             if MAX_RETRY > try_count:
                 raise Exception("Exceeded tries")
             time.sleep(MAX_WAIT)
             continue
-        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait)
+        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode)
 
 
 def get_last_offset():
@@ -181,6 +186,7 @@ def get_last_offset():
             for result in results:
                 offset = result['update_id'] + 1
     return offset
+
 
 def flush_chat():
     global chats

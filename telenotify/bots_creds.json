@@ -1,18 +1,23 @@
 {
-    "default_bot" : "THE DEFAULT BOT NAME",
-    "user":"YOUR USERNAME",
-    "default_chat" : "chat1",
+    "default_bot" : "server_global_alerts_bot",
+    "user":"srg_ptg",
+    "default_chat" : "srg_ptg",
     "chats": [{
-        "chat1":"CHAT_ID"
-        }],
-    "bot1" : [
+        "srg_ptg":"795687712"
+    }],
+    "transito_jogos_bot" : [
         {
-            "TOKEN":"THE TOKEN WHEN THE BOT WAS CREATED"
+            "TOKEN":"5497231888:AAERJftQrgnvhusw2bv_kYkE4Y_YHaTLGcA"
         }
     ],
-    "bot2" : [
+    "server_global_alerts_bot" : [
         {
-            "TOKEN":"THE TOKEN WHEN THE BOT WAS CREATED"
+            "TOKEN":"5737866574:AAF8o9qjHUHfJDVZtp0W45H80VIQ7dSu9Uc"
+        }
+    ],
+    "uvps_bot" : [
+        {
+            "TOKEN":"5745424721:AAGJai9yseqGVOv-3H3o2X87SbzktT9nglc"
         }
     ]
 }
