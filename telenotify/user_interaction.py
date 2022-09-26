@@ -1,7 +1,6 @@
 import time
 import requests
 from datetime import datetime
-import urllib.parse
 
 from telenotify import telegram_bots
 
@@ -92,7 +91,7 @@ def send_broadcast(message,bot_name=None, parse_mode=None):
 def send_notification(message, bot_name=None,nickname=None, parse_mode=None):
     if message is None or message == '':
         raise Exception('Empty messages not allowed')
-    message = urllib.parse.quote(message.strip())
+    message = message.strip()
     telegram_bots.select_bot(bot_name)
     telegram_bots.select_chat(nickname)
     chat_id = telegram_bots.get_chat()
