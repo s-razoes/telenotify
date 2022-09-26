@@ -196,7 +196,7 @@ def flush_chat():
 
 
 #will wait for a response from the user and return the string of that choice
-def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, secret=False, prefix_msgs='Choice:', user_reminder = 0):
+def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, secret=False, prefix_msgs='Choice:', user_reminder = 0, parse_mode=None):
     if options is None or len(options) == 0:
         raise Exception("Options are a mandatory array for the wait_for_choice")
 
@@ -215,7 +215,7 @@ def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, 
                     short_options[char] = option
 
     while True:
-        response = question(prompt=msg, bot_name=bot_name, user_reminder=user_reminder)
+        response = question(prompt=msg, bot_name=bot_name, user_reminder=user_reminder, parse_mode=parse_mode)
         if response in options or response in short_options:
             if response not in options:
                 response = short_options[response]
@@ -225,7 +225,7 @@ def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, 
             message = f'{prefix_msgs} Not an option'
             if secret == False:
                 message = message + f' ({wait_for_msg})'
-            send_notification(message)
+            send_notification(message, parse_mode=parse_mode)
 
 
 #wait for a single response, like a pause
