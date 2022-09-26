@@ -89,18 +89,20 @@ def send_broadcast(message,bot_name=None, parse_mode=None):
 
 
 def send_notification(message, bot_name=None,nickname=None, parse_mode=None):
-    if message is None or message == '':
-        raise Exception('Empty messages not allowed')
-    message = message.strip()
     telegram_bots.select_bot(bot_name)
     telegram_bots.select_chat(nickname)
     chat_id = telegram_bots.get_chat()
     data = {}
     data["chat_id"] = chat_id
-    data["text"] = message
     data["disable_web_page_preview"] = True
+    if message == '' or message is None:
+        parse_mode = 'HTML'
+        message = '<strike>No message</strike>'
+    else:
+        message = message.strip()
     if parse_mode is not None:
         data["parse_mode"]=parse_mode
+    data["text"] = message
     return post_request("sendMessage", data)
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
 
@@ -145,6 +147,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
         if user_reminder > 0:
             if cycle%user_reminder == 0:
                 send_notification(prompt, parse_mode=parse_mode)
+
 
 def sendDocument(document_path, bot_name=None):
     telegram_bots.select_bot(bot_name)
