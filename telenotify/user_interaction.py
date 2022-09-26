@@ -98,6 +98,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None):
     data = {}
     data["chat_id"] = chat_id
     data["text"] = message
+    data["disable_web_page_preview"] = True
     if parse_mode is not None:
         data["parse_mode"]=parse_mode
     return post_request("sendMessage", data)
