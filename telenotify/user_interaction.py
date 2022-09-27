@@ -1,3 +1,4 @@
+import os
 import time
 import requests
 from datetime import datetime
@@ -7,6 +8,8 @@ from telenotify import telegram_bots
 MAX_RETRY = 10
 MAX_WAIT = 60
 INCREMENT_WAIT = 1
+LIMIT_SIZE = 50000000
+
 offset = None
 chats = []
 
@@ -88,13 +91,14 @@ def send_broadcast(message,bot_name=None, parse_mode=None):
         send_notification(message, bot_name=bot_name,nickname=chat, parse_mode=parse_mode)
 
 
-def send_notification(message, bot_name=None,nickname=None, parse_mode=None):
+def send_notification(message, bot_name=None,nickname=None, parse_mode=None, disable_notification=False):
     telegram_bots.select_bot(bot_name)
     telegram_bots.select_chat(nickname)
     chat_id = telegram_bots.get_chat()
     data = {}
     data["chat_id"] = chat_id
     data["disable_web_page_preview"] = True
+    data["disable_notification"] = disable_notification
     if message == '' or message is None:
         parse_mode = 'HTML'
         message = '<strike>No message</strike>'
@@ -150,11 +154,16 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
 
 
 def sendDocument(document_path, bot_name=None):
+    if os.path.exists(document_path) is False:
+        return f"File {document_path} does not exist."
+    size = os.path.getsize(document_path)
+    if size > LIMIT_SIZE:
+        return f"File too large {size} limit {LIMIT_SIZE}"
     telegram_bots.select_bot(bot_name)
     document = open(document_path, 'rb')
     r = post_request("sendDocument", data={'chat_id': telegram_bots.get_chat()}, files={'document': document})
     document.close()
-    return r
+    return r.status_code == 200
 
 
 def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None):
