@@ -111,7 +111,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
 
 
-def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None):
+def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
     global MAX_RETRY
 
     telegram_bots.select_bot(bot_name)
@@ -181,7 +181,7 @@ def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, increm
                 raise Exception("Exceeded tries")
             time.sleep(MAX_WAIT)
             continue
-        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode)
+        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode, prompt=prompt)
 
 
 def get_last_offset():
