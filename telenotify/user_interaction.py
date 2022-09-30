@@ -114,7 +114,6 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
         if parse_mode == 'HTML':
             #has tag, propagate it
             if message[:1] == '<':
-                breakpoint()
                 end_tag1 = message.find("</")
                 end_tag2 = message.find(">",end_tag1) + 1
                 tag_close = message[end_tag1:end_tag2]
