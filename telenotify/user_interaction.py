@@ -9,6 +9,7 @@ MAX_RETRY = 10
 MAX_WAIT = 60
 INCREMENT_WAIT = 1
 LIMIT_SIZE = 50000000
+MAX_NOTIFICATION = 4092
 
 offset = None
 chats = []
@@ -106,6 +107,26 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
         message = message.strip()
     if parse_mode is not None:
         data["parse_mode"]=parse_mode
+
+    if len(message) > MAX_NOTIFICATION:
+        message_part1 = message[:MAX_NOTIFICATION]
+        message_part2 = message[MAX_NOTIFICATION:]
+        if parse_mode == 'HTML':
+            #has tag, propagate it
+            if message[:1] == '<':
+                end_tag1 = message.find("</")
+                end_tag2 = message.find(">",end_tag1) 
+                tag_close = message[end_tag1:end_tag2]
+                start_tag1 = message.find("<")
+                start_tag2 = message.find(">") + 1
+                tag_start = message[start_tag1:start_tag2]
+                limit = MAX_NOTIFICATION - tag_close
+                message_part1 = message[:limit]
+                message_part1 += tag_close
+                message_part2 = message[limit:]
+                message_part2 += tag_start
+        send_notification(message_part1, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification)
+        message = message_part2
     data["text"] = message
     return post_request("sendMessage", data)
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
