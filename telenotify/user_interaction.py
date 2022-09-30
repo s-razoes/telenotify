@@ -70,7 +70,6 @@ def get_next_message():
         
 
 def get_request(method,params=''):
-    return 'request'
     global WEB_URL
     try:
         return requests.get(f"{WEB_URL}{telegram_bots.get_token()}/{method}?{params}")
@@ -224,7 +223,7 @@ def get_last_offset():
         fail_counts = 0
         while True:
             r = get_request("getUpdates")
-            if r == False:
+            if type(r) == str:
                 time.sleep(max_wait)
                 fail_counts = fail_counts + 1
                 log_error(f"Get last offset failed {r}")
