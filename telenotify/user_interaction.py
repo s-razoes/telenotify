@@ -127,7 +127,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
                 message_part2 = message[limit:]
                 message_part2 = tag_start + message_part2
         send_notification(message_part1, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification, persist=persist)
-        return send_notification(message_part2, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notificatio, persist=persist)
+        return send_notification(message_part2, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification, persist=persist)
 
     data["text"] = message
     if persist:
@@ -146,7 +146,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
     else:
         return post_request("sendMessage", data)
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
-    
+
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
     global MAX_RETRY
