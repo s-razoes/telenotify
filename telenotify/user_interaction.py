@@ -137,9 +137,9 @@ def persist_notification(message, bot_name=None,nickname=None, parse_mode=None, 
     try_count = 0
     while True:
         try_count = try_count + 1
-        r = send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode)
+        r = send_notification(message, bot_name=bot_name, parse_mode=parse_mode)
         if type(r) == str:
-            log_error(f"Failure asking:{prompt}\n{r}")
+            log_error(f"Failure sending message:{message}\n{r}")
             if try_count > MAX_RETRY:
                 raise Exception("Exceeded tries")
             time.sleep(MAX_WAIT)
