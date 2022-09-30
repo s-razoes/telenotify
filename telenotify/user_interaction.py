@@ -120,7 +120,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
                 start_tag1 = message.find("<")
                 start_tag2 = message.find(">") + 1
                 tag_start = message[start_tag1:start_tag2]
-                limit = MAX_NOTIFICATION - tag_close
+                limit = MAX_NOTIFICATION - len(tag_close)
                 message_part1 = message[:limit]
                 message_part1 += tag_close
                 message_part2 = message[limit:]
