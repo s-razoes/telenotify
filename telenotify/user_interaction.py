@@ -89,10 +89,10 @@ def get_request(method,params=''):
 def send_broadcast(message,bot_name=None, parse_mode=None):
     telegram_bots.select_bot(bot_name)
     for chat in telegram_bots.chats_list:
-        persist_notification(message, bot_name=bot_name,nickname=chat, parse_mode=parse_mode)
+        send_notification(message, bot_name=bot_name,nickname=chat, parse_mode=parse_mode, persist=True)
 
 
-def send_notification(message, bot_name=None,nickname=None, parse_mode=None, disable_notification=False):
+def send_notification(message, bot_name=None,nickname=None, parse_mode=None, disable_notification=False, persist=False):
     telegram_bots.select_bot(bot_name)
     telegram_bots.select_chat(nickname)
     chat_id = telegram_bots.get_chat()
@@ -108,6 +108,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
     if parse_mode is not None:
         data["parse_mode"]=parse_mode
 
+    #message too large
     if len(message) > MAX_NOTIFICATION:
         message_part1 = message[:MAX_NOTIFICATION]
         message_part2 = message[MAX_NOTIFICATION:]
@@ -125,27 +126,27 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
                 message_part1 += tag_close
                 message_part2 = message[limit:]
                 message_part2 = tag_start + message_part2
-        send_notification(message_part1, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification)
-        message = message_part2
+        send_notification(message_part1, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification, persist=persist)
+        return send_notification(message_part2, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notificatio, persist=persist)
+
     data["text"] = message
-    return post_request("sendMessage", data)
+    if persist:
+        try_count = 0
+        while True:
+            try_count = try_count + 1
+            r = post_request("sendMessage", data)
+            if type(r) == str:
+                log_error(f"Failure sending message:{message}\n{r}")
+                if try_count > MAX_RETRY:
+                    raise Exception("Exceeded tries")
+                time.sleep(MAX_WAIT)
+                continue
+            else:
+                return r
+    else:
+        return post_request("sendMessage", data)
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
-
-
-def persist_notification(message, bot_name=None,nickname=None, parse_mode=None, disable_notification=False):
-    try_count = 0
-    while True:
-        try_count = try_count + 1
-        r = send_notification(message, bot_name=bot_name, parse_mode=parse_mode)
-        if type(r) == str:
-            log_error(f"Failure sending message:{message}\n{r}")
-            if try_count > MAX_RETRY:
-                raise Exception("Exceeded tries")
-            time.sleep(MAX_WAIT)
-            continue
-        else:
-            break
-        
+    
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
     global MAX_RETRY
@@ -207,7 +208,7 @@ def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, increm
     global MAX_RETRY
     if flush:
         flush_chat()
-    persist_notification(prompt, bot_name=bot_name, parse_mode=parse_mode)
+    send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode, persist=True)
     return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode, prompt=prompt)
 
 
@@ -270,13 +271,13 @@ def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, 
         if response in options or response in short_options:
             if response not in options:
                 response = short_options[response]
-            persist_notification(f"{prefix_msgs} {response}.")
+            send_notification(f"{prefix_msgs} {response}.", persist=True)
             return response
         else:
             message = f'{prefix_msgs} Not an option'
             if secret == False:
                 message = message + f' ({wait_for_msg})'
-            persist_notification(message, parse_mode=parse_mode)
+            send_notification(message, parse_mode=parse_mode, persist=True)
 
 
 #wait for a single response, like a pause
@@ -290,6 +291,6 @@ def wait_any(prompt='Waiting any input to proceed.', prefix_msgs='Bot:', bot_nam
     flush_chat()
     response, offset = question(prompt=prompt, bot_name=bot_name, user_reminder=0)
     if done_msg is not None and done_msg != '':
-        persist_notification(done_msg)
+        send_notification(done_msg, persist=True)
     return response
 
