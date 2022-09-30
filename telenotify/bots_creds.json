@@ -1,23 +1,13 @@
 {
-    "default_bot" : "server_global_alerts_bot",
-    "user":"srg_ptg",
-    "default_chat" : "srg_ptg",
+    "default_bot" : "_bot",
+    "user":"",
+    "default_chat" : "",
     "chats": [{
-        "srg_ptg":"795687712"
+        "user":""
     }],
-    "transito_jogos_bot" : [
+    "_bot" : [
         {
-            "TOKEN":"5497231888:AAERJftQrgnvhusw2bv_kYkE4Y_YHaTLGcA"
-        }
-    ],
-    "server_global_alerts_bot" : [
-        {
-            "TOKEN":"5737866574:AAF8o9qjHUHfJDVZtp0W45H80VIQ7dSu9Uc"
-        }
-    ],
-    "uvps_bot" : [
-        {
-            "TOKEN":"5745424721:AAGJai9yseqGVOv-3H3o2X87SbzktT9nglc"
+            "TOKEN":""
         }
     ]
 }
