@@ -159,8 +159,11 @@ def split_message(message, limit=MAX_NOTIFICATION):
     return message_p1.strip(), message_p2.strip()
 
 
-def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
+def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??', idle_poll=False):
     global MAX_RETRY
+    if user_reminder != 0 and idle_poll:
+        raise Exception("If there's a reminder it cannot be an idle poll")
+
     telegram_bots.select_bot(bot_name)
     
     start_wait = 5
@@ -169,39 +172,53 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
     fail_counts = 0
 
     lock_name = f"polling lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
-    with ILock(lock_name):
-        while True:
-            result = get_next_message()
-            
-            if result == False:
-                #error occurred
+    lock = ILock(lock_name)
+    #NOT idle lock is for whole polling
+    if idle_poll is False:
+        lock.__enter__()
+    while True:
+        #when idle polling, only lock when getting messages
+        if idle_poll:
+            lock.__enter__()
+        #get the message
+        result = get_next_message()
+        #releasing lock for idle
+        if idle_poll:
+            lock.__exit__(None,None,None)
+        
+        if result == False:
+            #error occurred
+            wait_interval = max_wait
+            fail_counts = fail_counts + 1
+            if fail_counts > MAX_RETRY:
+                log_error("Cancelling polling")
+                if idle_poll is False:
+                    lock.__exit__(None,None,None)
+                return None
+        else:
+            #meaning it has a message
+            if result != True:
+                fail_counts = 0
+                wait_interval = start_wait
+                cycle = 0
+                if 'text' not in result:
+                    log_error(f"Message missing from response:{result}")
+                    continue
+                if result['from']['username'] == telegram_bots.get_auth_user():
+                    if idle_poll is False:
+                        lock.__exit__(None,None,None)
+                    return result['text']
+
+        time.sleep(wait_interval)
+        if wait_interval < max_wait:
+            wait_interval = cycle * incremental_wait
+            if wait_interval > max_wait:
                 wait_interval = max_wait
-                fail_counts = fail_counts + 1
-                if fail_counts > MAX_RETRY:
-                    log_error("Cancelling polling")
-                    return None
-            else:
-                #meaning it has a message
-                if result != True:
-                    fail_counts = 0
-                    wait_interval = start_wait
-                    cycle = 0
-                    if 'text' not in result:
-                        log_error(f"Message missing from response:{result}")
-                        continue
-                    if result['from']['username'] == telegram_bots.get_auth_user():
-                        return result['text']
+        cycle = cycle + 1
 
-            time.sleep(wait_interval)
-            if wait_interval < max_wait:
-                wait_interval = cycle * incremental_wait
-                if wait_interval > max_wait:
-                    wait_interval = max_wait
-            cycle = cycle + 1
-
-            if user_reminder > 0:
-                if cycle%user_reminder == 0:
-                    send_notification(prompt, parse_mode=parse_mode)
+        if user_reminder > 0:
+            if cycle%user_reminder == 0:
+                send_notification(prompt, parse_mode=parse_mode)
 
 
 def sendDocument(document_path, bot_name=None):
