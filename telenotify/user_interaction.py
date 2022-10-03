@@ -150,8 +150,8 @@ def split_message(message, limit=MAX_NOTIFICATION):
     message_p1 = message[:limit]
     message_p2 = message[limit:]
     for char in SPLIT_CHARS:
-        if char in message_part1:
-            limit = message_part1.rfind(char)
+        if char in message_p1:
+            limit = message_p1.rfind(char)
             message_p1 = message[:limit]
             message_p2 = message[limit:]
             break
