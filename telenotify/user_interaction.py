@@ -10,7 +10,7 @@ MAX_WAIT = 60
 INCREMENT_WAIT = 1
 LIMIT_SIZE = 50000000
 MAX_NOTIFICATION = 4092
-SPLIT_CHARS = ['\n', ' ']
+SPLIT_CHARS = ['\n',' ','\t']
 
 offset = None
 chats = []
@@ -147,13 +147,15 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
 
 def split_message(message, limit=MAX_NOTIFICATION):
+    message_p1 = message[:limit]
+    message_p2 = message[limit:]
     for char in SPLIT_CHARS:
         if char in message_part1:
             limit = message_part1.rfind(char)
+            message_p1 = message[:limit]
+            message_p2 = message[limit:]
             break
-    message_part1 = message[:limit]
-    message_part2 = message[limit:]
-    return message_part1,message_part2
+    return message_p1,message_p2
 
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
