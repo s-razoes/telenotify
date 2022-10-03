@@ -155,7 +155,7 @@ def split_message(message, limit=MAX_NOTIFICATION):
             message_p1 = message[:limit]
             message_p2 = message[limit:]
             break
-    return message_p1,message_p2
+    return message_p1.strip(), message_p2.strip()
 
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
