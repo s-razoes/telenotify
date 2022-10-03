@@ -24,7 +24,7 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Environment :: Web Environment',
-        'Framework :: Flask',
+        'Framework :: Requests',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
@@ -39,10 +39,10 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Communications :: File Sharing',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: WSGI',
-        'Topic :: Security'
+        'Topic :: Communications :: Real time notification',
+        'Topic :: Telegram'
     ],
     packages=['telenotify'],
     entry_points={

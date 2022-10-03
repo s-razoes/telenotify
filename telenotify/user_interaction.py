@@ -2,6 +2,7 @@ import os
 import time
 import requests
 from datetime import datetime
+from ilock import ILock
 
 from telenotify import telegram_bots
 
@@ -160,44 +161,47 @@ def split_message(message, limit=MAX_NOTIFICATION):
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
     global MAX_RETRY
-
     telegram_bots.select_bot(bot_name)
+    
     start_wait = 5
     wait_interval = start_wait
     cycle = 0
     fail_counts = 0
-    while True:
-        result = get_next_message()
-        
-        if result == False:
-            #error occurred
-            wait_interval = max_wait
-            fail_counts = fail_counts + 1
-            if fail_counts > MAX_RETRY:
-                log_error("Cancelling polling")
-                return None
-        else:
-            #meaning it has a message
-            if result != True:
-                fail_counts = 0
-                wait_interval = start_wait
-                cycle = 0
-                if 'text' not in result:
-                    log_error(f"Message missing from response:{result}")
-                    continue
-                if result['from']['username'] == telegram_bots.get_auth_user():
-                    return result['text']
 
-        time.sleep(wait_interval)
-        if wait_interval < max_wait:
-            wait_interval = cycle * incremental_wait
-            if wait_interval > max_wait:
+    lock_name = f"polling lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
+    with ILock(lock_name):
+        while True:
+            result = get_next_message()
+            
+            if result == False:
+                #error occurred
                 wait_interval = max_wait
-        cycle = cycle + 1
+                fail_counts = fail_counts + 1
+                if fail_counts > MAX_RETRY:
+                    log_error("Cancelling polling")
+                    return None
+            else:
+                #meaning it has a message
+                if result != True:
+                    fail_counts = 0
+                    wait_interval = start_wait
+                    cycle = 0
+                    if 'text' not in result:
+                        log_error(f"Message missing from response:{result}")
+                        continue
+                    if result['from']['username'] == telegram_bots.get_auth_user():
+                        return result['text']
 
-        if user_reminder > 0:
-            if cycle%user_reminder == 0:
-                send_notification(prompt, parse_mode=parse_mode)
+            time.sleep(wait_interval)
+            if wait_interval < max_wait:
+                wait_interval = cycle * incremental_wait
+                if wait_interval > max_wait:
+                    wait_interval = max_wait
+            cycle = cycle + 1
+
+            if user_reminder > 0:
+                if cycle%user_reminder == 0:
+                    send_notification(prompt, parse_mode=parse_mode)
 
 
 def sendDocument(document_path, bot_name=None):
@@ -216,10 +220,12 @@ def sendDocument(document_path, bot_name=None):
 def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None):
     global MAX_WAIT
     global MAX_RETRY
-    if flush:
-        flush_chat()
-    send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode, persist=True)
-    return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode, prompt=prompt)
+    lock_name = f"question lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
+    with ILock(lock_name):
+        if flush:
+            flush_chat()
+        send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode, persist=True)
+        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode, prompt=prompt)
 
 
 def get_last_offset():
@@ -275,10 +281,13 @@ def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, 
             for char in option:
                 if char.isupper() and char not in options and char not in short_options:
                     short_options[char] = option
+                    #allow y and Y to solve to Yes
+                    if char != char.lower():
+                        short_options[char.lower()] = option
 
     while True:
         response = question(prompt=msg, bot_name=bot_name, user_reminder=user_reminder, parse_mode=parse_mode)
-        if response in options or response in short_options:
+        if response in options or response in short_options or response:
             if response not in options:
                 response = short_options[response]
             send_notification(f"{prefix_msgs} {response}.", persist=True)
@@ -303,4 +312,5 @@ def wait_any(prompt='Waiting any input to proceed.', prefix_msgs='Bot:', bot_nam
     if done_msg is not None and done_msg != '':
         send_notification(done_msg, persist=True)
     return response
+
 

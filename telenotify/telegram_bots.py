@@ -23,6 +23,12 @@ def get_token():
 def get_chat():
     return chats_list[selected_chat]
 
+def get_select_chat():
+    return selected_chat
+
+def get_selected_bot():
+    return selected_bot
+
 def get_auth_user():
     return bots_jo['user']
 
