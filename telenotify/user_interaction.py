@@ -10,11 +10,13 @@ MAX_WAIT = 60
 INCREMENT_WAIT = 1
 LIMIT_SIZE = 50000000
 MAX_NOTIFICATION = 4092
+SPLIT_CHARS = ['\n', ' ']
 
 offset = None
 chats = []
 
 WEB_URL = "https://api.telegram.org/bot"
+
 
 def log_error(msg):
     now = datetime.now()
@@ -110,8 +112,7 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
 
     #message too large
     if len(message) > MAX_NOTIFICATION:
-        message_part1 = message[:MAX_NOTIFICATION]
-        message_part2 = message[MAX_NOTIFICATION:]
+        message_part1, message_part2 = split_message(message)
         if parse_mode == 'HTML':
             #has tag, propagate it
             if message[:1] == '<':
@@ -121,14 +122,12 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
                 start_tag1 = message.find("<")
                 start_tag2 = message.find(">") + 1
                 tag_start = message[start_tag1:start_tag2]
-                limit = MAX_NOTIFICATION - len(tag_close)
-                message_part1 = message[:limit]
+                message_part1, message_part2 = split_message(message, MAX_NOTIFICATION - len(tag_close))
                 message_part1 += tag_close
-                message_part2 = message[limit:]
                 message_part2 = tag_start + message_part2
         send_notification(message_part1, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification, persist=persist)
         return send_notification(message_part2, bot_name=bot_name,nickname=nickname, parse_mode=parse_mode, disable_notification=disable_notification, persist=persist)
-
+    #proceed normal message
     data["text"] = message
     if persist:
         try_count = 0
@@ -146,6 +145,15 @@ def send_notification(message, bot_name=None,nickname=None, parse_mode=None, dis
     else:
         return post_request("sendMessage", data)
     #return get_request("sendMessage",f"chat_id={chat_id}&text={message}")
+
+def split_message(message, limit=MAX_NOTIFICATION):
+    for char in SPLIT_CHARS:
+        if char in message_part1:
+            limit = message_part1.rfind(char)
+            break
+    message_part1 = message[:limit]
+    message_part2 = message[limit:]
+    return message_part1,message_part2
 
 
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??'):
