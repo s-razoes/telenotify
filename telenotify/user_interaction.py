@@ -165,7 +165,7 @@ def split_message(message, limit=MAX_NOTIFICATION):
 #  - "any other" - lock whole process until getting a new message
 def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??', lock_type='N'):
     global MAX_RETRY
-    if user_reminder != 0 and idle_poll:
+    if user_reminder != 0 and lock_type == 'idle':
         raise Exception("If there's a reminder it cannot be an idle poll")
 
     telegram_bots.select_bot(bot_name)
