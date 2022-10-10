@@ -203,7 +203,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
             fail_counts = fail_counts + 1
             if fail_counts > MAX_RETRY:
                 log_error("Cancelling polling")
-                if lock_type != None:
+                if lock_type != None and lock_type != 'idle':
                     lock.__exit__(None,None,None)
                 return None
         else:
@@ -216,7 +216,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
                     log_error(f"Message missing from response:{result}")
                     continue
                 if result['from']['username'] == telegram_bots.get_auth_user():
-                    if lock_type != None:
+                    if lock_type != None and lock_type != 'idle':
                         lock.__exit__(None,None,None)
                     return result['text']
 
