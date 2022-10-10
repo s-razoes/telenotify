@@ -9,8 +9,9 @@ from telenotify import telegram_bots
 MAX_RETRY = 10
 MAX_WAIT = 60
 INCREMENT_WAIT = 1
-LIMIT_SIZE = 50000000
+FILE_LIMIT_SIZE = 50000000
 MAX_NOTIFICATION = 4092
+TIMEOUT_LOCK_FLUSH = 1
 SPLIT_CHARS = ['\n',' ','\t']
 
 offset = None
@@ -158,8 +159,11 @@ def split_message(message, limit=MAX_NOTIFICATION):
             break
     return message_p1.strip(), message_p2.strip()
 
-
-def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??', idle_poll=False):
+#lock_type:
+#  - None - no lock
+#  - Idle - only lock when getting new messages
+#  - "any other" - lock whole process until getting a new message
+def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??', lock_type='N'):
     global MAX_RETRY
     if user_reminder != 0 and idle_poll:
         raise Exception("If there's a reminder it cannot be an idle poll")
@@ -171,19 +175,26 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
     cycle = 0
     fail_counts = 0
 
-    lock_name = f"polling lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
-    lock = ILock(lock_name)
-    #NOT idle lock is for whole polling
-    if idle_poll is False:
-        lock.__enter__()
+    if lock_type != None:
+        lock_name = f"lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
+        lock = ILock(lock_name)
+        #NOT idle lock is for whole polling
+        if lock_type != 'idle':
+            lock.__enter__()
     while True:
         #when idle polling, only lock when getting messages
-        if idle_poll:
+        if lock_type == 'idle':
+            start_time = time.time()
             lock.__enter__()
+            if (time.time() - start_time) >= TIMEOUT_LOCK_FLUSH:
+                #if lock time was over the timeout, flush all messages
+                flush_chat()
+        
         #get the message
         result = get_next_message()
+
         #releasing lock for idle
-        if idle_poll:
+        if lock_type == 'idle':
             lock.__exit__(None,None,None)
         
         if result == False:
@@ -192,7 +203,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
             fail_counts = fail_counts + 1
             if fail_counts > MAX_RETRY:
                 log_error("Cancelling polling")
-                if idle_poll is False:
+                if lock_type != None:
                     lock.__exit__(None,None,None)
                 return None
         else:
@@ -205,7 +216,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
                     log_error(f"Message missing from response:{result}")
                     continue
                 if result['from']['username'] == telegram_bots.get_auth_user():
-                    if idle_poll is False:
+                    if lock_type != None:
                         lock.__exit__(None,None,None)
                     return result['text']
 
@@ -225,8 +236,8 @@ def sendDocument(document_path, bot_name=None):
     if os.path.exists(document_path) is False:
         return f"File {document_path} does not exist."
     size = os.path.getsize(document_path)
-    if size > LIMIT_SIZE:
-        return f"File too large {size} limit {LIMIT_SIZE}"
+    if size > FILE_LIMIT_SIZE:
+        return f"File too large {size} limit {FILE_LIMIT_SIZE}"
     telegram_bots.select_bot(bot_name)
     document = open(document_path, 'rb')
     r = post_request("sendDocument", data={'chat_id': telegram_bots.get_chat()}, files={'document': document})
@@ -237,12 +248,12 @@ def sendDocument(document_path, bot_name=None):
 def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None):
     global MAX_WAIT
     global MAX_RETRY
-    lock_name = f"question lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
+    lock_name = f"lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
     with ILock(lock_name):
         if flush:
             flush_chat()
         send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode, persist=True)
-        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode, prompt=prompt)
+        return polling(bot_name=bot_name, user_reminder = user_reminder, max_wait=max_wait, incremental_wait=incremental_wait, parse_mode=parse_mode, prompt=prompt, lock_type=None)
 
 
 def get_last_offset():
