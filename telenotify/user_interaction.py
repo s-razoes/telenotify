@@ -22,8 +22,8 @@ WEB_URL = "https://api.telegram.org/bot"
 
 def log_error(msg):
     now = datetime.now()
-    timestamp = f"{now.year}-{now.month}-{now.day} {now.hour}:{now.minute}:{now.second}"
-    print(f"[{timestamp}]{msg.strip()}")
+    timestamp = f"{now.year}-{now.month:02}-{now.day:02} {now.hour:02}:{now.minute:02}:{now.second:02}"
+    print(f"[{timestamp}] {msg.strip()}")
 
 
 def post_request(method,data,files=None):
@@ -163,7 +163,10 @@ def split_message(message, limit=MAX_NOTIFICATION):
 #  - None - no lock
 #  - Idle - only lock when getting new messages
 #  - "any other" - lock whole process until getting a new message
-def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??', lock_type='N'):
+#timeout:
+# it's cycles not time based. 
+# retuns None, like an error
+def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, parse_mode=None, prompt='??', lock_type='N', timeout=None):
     global MAX_RETRY
     if user_reminder != 0 and lock_type == 'idle':
         raise Exception("If there's a reminder it cannot be an idle poll")
@@ -182,6 +185,10 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
         if lock_type != 'idle':
             lock.__enter__()
     while True:
+        #verify if it's timeout break
+        if timeout is not None:
+            if timeout <= cycle:
+                break
         #when idle polling, only lock when getting messages
         if lock_type == 'idle':
             start_time = time.time()
@@ -205,7 +212,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
                 log_error("Cancelling polling")
                 if lock_type != None and lock_type != 'idle':
                     lock.__exit__(None,None,None)
-                return None
+                break
         else:
             #meaning it has a message
             if result != True:
@@ -230,6 +237,8 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
         if user_reminder > 0:
             if cycle%user_reminder == 0:
                 send_notification(prompt, parse_mode=parse_mode)
+    #cycle timed-out, or errored out
+    return None
 
 
 def sendDocument(document_path, bot_name=None):
