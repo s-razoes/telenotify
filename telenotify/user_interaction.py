@@ -19,6 +19,12 @@ chats = []
 
 WEB_URL = "https://api.telegram.org/bot"
 
+#only for linux
+MEMORY_FILE_DIRECTORY = '/dev/shm/'
+
+lock_directory = None
+if os.path.isdir(MEMORY_FILE_DIRECTORY):
+    lock_directory = MEMORY_FILE_DIRECTORY
 
 def log_error(msg):
     now = datetime.now()
@@ -180,7 +186,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
 
     if lock_type != None:
         lock_name = f"lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
-        lock = ILock(lock_name)
+        lock = ILock(lock_name, lock_directory=lock_directory)
         #NOT idle lock is for whole polling
         if lock_type != 'idle':
             lock.__enter__()
@@ -258,7 +264,7 @@ def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, increm
     global MAX_WAIT
     global MAX_RETRY
     lock_name = f"lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
-    with ILock(lock_name):
+    with ILock(lock_name, lock_directory=lock_directory):
         if flush:
             flush_chat()
         send_notification(prompt, bot_name=bot_name, parse_mode=parse_mode, persist=True)
