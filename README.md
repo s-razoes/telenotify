@@ -37,3 +37,5 @@ Ask user a question and wait for reply
 Send broadcast message to all users in the configuration
 
 `python3 -m telenotify.broadcast BOT_NAME MESSAGE`
+
+![screenshot](https://raw.githubusercontent.com/s-razoes/telenotify/master/example_question.png)
