@@ -1,9 +1,9 @@
-![Version 1](http://img.shields.io/badge/version-v1.55-green.svg)
+![Version 1](http://img.shields.io/badge/version-v1.12-green.svg)
 ![Python 3.8](http://img.shields.io/badge/python-3.8-blue.svg)
 [![MIT License](http://img.shields.io/badge/license-MIT%20License-blue.svg)](https://github.com/s-razoes/updog/blob/master/LICENSE)
 
 
-telenotify is a simple telegram, none webhook interaction python module.
+telenotify is a simple telegram, no webhook, user interaction python module.
 
 ## Installation
 
