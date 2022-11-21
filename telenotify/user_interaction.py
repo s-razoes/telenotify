@@ -226,7 +226,10 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
                 wait_interval = start_wait
                 cycle = 0
                 if 'text' not in result:
-                    log_error(f"Message missing from response:{result}")
+                    log_error(f"'text' missing from response:{result}")
+                    continue
+                if 'username' not in result['from']:
+                    log_error(f"'username' missing from response:{result}")
                     continue
                 if result['from']['username'] == telegram_bots.get_auth_user():
                     if lock_type != None and lock_type != 'idle':
