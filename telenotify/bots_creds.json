@@ -1,13 +1,13 @@
 {
-    "default_bot" : "_bot",
-    "user":"",
-    "default_chat" : "",
+    "default_bot" : "#_bot#",
+    "user":"#USER_NAME# of user that can accept replies.",
+    "default_chat" : "#USER_NAME#",
     "chats": [{
-        "user":""
+        "#USER_NAME#":"#CHAT_ID#"
     }],
-    "_bot" : [
+    "#_bot#" : [
         {
-            "TOKEN":""
+            "TOKEN":"#TOKEN#"
         }
     ]
 }

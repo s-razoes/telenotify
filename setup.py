@@ -11,8 +11,6 @@ setup(
     name='telenotify',
     version=telenotify.version,
     url='https://github.com/s-razoes/telenotify',
-    # GitHub releases in format "updog-X.Y"
-    download_url = 'https://github.com/s-razoes/telenotify/archive/updog-' + telenotify.version + '.tar.gz',
     license='MIT',
     author='s-razoes',
     author_email='srzgtfo@gmail.com',
@@ -42,6 +40,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Topic :: Communications :: File Sharing',
         'Topic :: Communications :: Real time notification',
+        'Topic :: Communications :: User Interaction',
         'Topic :: Telegram'
     ],
     packages=['telenotify'],
