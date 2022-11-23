@@ -6,8 +6,8 @@ from ilock import ILock
 
 from telenotify import telegram_bots
 
-MAX_RETRY = 10
-MAX_WAIT = 60
+MAX_RETRY = 100
+MAX_WAIT = 120
 INCREMENT_WAIT = 1
 FILE_LIMIT_SIZE = 50000000
 MAX_NOTIFICATION = 4092
