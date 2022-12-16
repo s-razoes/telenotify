@@ -333,7 +333,7 @@ def wait_for_choice(options, prompt="waiting for user's choice", bot_name=None, 
 
     while True:
         response = question(prompt=msg, bot_name=bot_name, user_reminder=user_reminder, parse_mode=parse_mode)
-        if response in options or response in short_options or response:
+        if response in options or response in short_options:
             if response not in options:
                 response = short_options[response]
             send_notification(f"{prefix_msgs} {response}.", persist=True)
