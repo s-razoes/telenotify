@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 from ilock import ILock
 
-from telenotify import telegram_bots
+from telenotify.telegram_bots import creds_manager
 
 MAX_RETRY = 100
 MAX_WAIT = 120
@@ -35,7 +35,7 @@ def log_error(msg):
 def post_request(method,data,files=None):
     global WEB_URL
     try:
-        return requests.post(f"{WEB_URL}{telegram_bots.get_token()}/{method}",data=data, files=files)
+        return requests.post(f"{WEB_URL}{creds_manager.get_token()}/{method}",data=data, files=files)
     except requests.exceptions.Timeout:
         return 'Timeout'
     except requests.exceptions.TooManyRedirects:
@@ -82,7 +82,7 @@ def get_next_message():
 def get_request(method,params=''):
     global WEB_URL
     try:
-        return requests.get(f"{WEB_URL}{telegram_bots.get_token()}/{method}?{params}")
+        return requests.get(f"{WEB_URL}{creds_manager.get_token()}/{method}?{params}")
     except requests.exceptions.Timeout:
         return 'Timeout'
     except requests.exceptions.TooManyRedirects:
@@ -97,15 +97,15 @@ def get_request(method,params=''):
 
 
 def send_broadcast(message,bot_name=None, parse_mode=None):
-    telegram_bots.select_bot(bot_name)
-    for chat in telegram_bots.chats_list:
+    creds_manager.select_bot(bot_name)
+    for chat in creds_manager.chats_list:
         send_notification(message, bot_name=bot_name,nickname=chat, parse_mode=parse_mode, persist=True)
 
 
 def send_notification(message, bot_name=None,nickname=None, parse_mode=None, disable_notification=False, persist=False):
-    telegram_bots.select_bot(bot_name)
-    telegram_bots.select_chat(nickname)
-    chat_id = telegram_bots.get_chat()
+    creds_manager.select_bot(bot_name)
+    creds_manager.select_chat(nickname)
+    chat_id = creds_manager.get_chat()
     data = {}
     data["chat_id"] = chat_id
     data["disable_web_page_preview"] = True
@@ -177,7 +177,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
     if user_reminder != 0 and lock_type == 'idle':
         raise Exception("If there's a reminder it cannot be an idle poll")
 
-    telegram_bots.select_bot(bot_name)
+    creds_manager.select_bot(bot_name)
     
     start_wait = 5
     wait_interval = start_wait
@@ -185,7 +185,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
     fail_counts = 0
 
     if lock_type != None:
-        lock_name = f"lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
+        lock_name = f"lock {creds_manager.get_select_chat()} {creds_manager.get_selected_bot()}"
         lock = ILock(lock_name, lock_directory=lock_directory)
         #NOT idle lock is for whole polling
         if lock_type != 'idle':
@@ -231,7 +231,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
                 if 'username' not in result['from']:
                     log_error(f"'username' missing from response:{result}")
                     continue
-                if result['from']['username'] == telegram_bots.get_auth_user():
+                if result['from']['username'] == creds_manager.get_auth_user():
                     if lock_type != None and lock_type != 'idle':
                         lock.__exit__(None,None,None)
                     return result['text']
@@ -256,9 +256,9 @@ def sendDocument(document_path, bot_name=None):
     size = os.path.getsize(document_path)
     if size > FILE_LIMIT_SIZE:
         return f"File too large {size} limit {FILE_LIMIT_SIZE}"
-    telegram_bots.select_bot(bot_name)
+    creds_manager.select_bot(bot_name)
     document = open(document_path, 'rb')
-    r = post_request("sendDocument", data={'chat_id': telegram_bots.get_chat()}, files={'document': document})
+    r = post_request("sendDocument", data={'chat_id': creds_manager.get_chat()}, files={'document': document})
     document.close()
     return r.status_code == 200
 
@@ -266,7 +266,7 @@ def sendDocument(document_path, bot_name=None):
 def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None):
     global MAX_WAIT
     global MAX_RETRY
-    lock_name = f"lock {telegram_bots.get_select_chat()} {telegram_bots.get_selected_bot()}"
+    lock_name = f"lock {creds_manager.get_select_chat()} {creds_manager.get_selected_bot()}"
     with ILock(lock_name, lock_directory=lock_directory):
         if flush:
             flush_chat()
