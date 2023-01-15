@@ -250,7 +250,8 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
     return None
 
 
-def sendDocument(document_path, bot_name=None):
+def sendDocument(document_path, bot_name=None, nickname=None):
+    creds_manager.select_chat(nickname)
     if os.path.exists(document_path) is False:
         return f"File {document_path} does not exist."
     size = os.path.getsize(document_path)
@@ -263,9 +264,10 @@ def sendDocument(document_path, bot_name=None):
     return r.status_code == 200
 
 
-def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None):
+def question(prompt, bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wait=INCREMENT_WAIT, flush=False, parse_mode=None, nickname=None):
     global MAX_WAIT
     global MAX_RETRY
+    creds_manager.select_chat(nickname)
     lock_name = f"lock {creds_manager.get_select_chat()} {creds_manager.get_selected_bot()}"
     with ILock(lock_name, lock_directory=lock_directory):
         if flush:

@@ -45,7 +45,12 @@ setup(
     ],
     packages=['telenotify','telenotify.telegram_bots'],
     entry_points={
-        'console_scripts': 'telenotify = telenotify.__main__:main'
+        'console_scripts': [
+            'telenotify = telenotify.__main__:main',
+            'telequestion = telenotify.question_user:main',
+            'telebroad = telenotify.broadcast:main',
+            'telefile = telenotify.send_file:main'
+            ]
     },
     include_package_data=True,
     install_requires=[
