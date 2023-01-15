@@ -93,7 +93,6 @@ def add_user(name, id):
 def del_user(name):
     global selected_chat
     global bots_jo
-    global chats_list
     if name not in bots_jo['chats'][0]:
         return
     del bots_jo['chats'][0][name]
@@ -169,7 +168,7 @@ def select_bot(bot_name):
         return False
     if bot_name == '':
         return False
-    if bot_name not in bots_jo:
+    if bot_name not in bots_jo['bots'][0]:
         return False
     selected_bot = bot_name
     return True
