@@ -8,10 +8,15 @@ path = os.path.abspath(__file__)
 dir_path = os.path.dirname(path)
 creds_file_name = os.path.join(dir_path, json_file_path)
 
-#load the credentials always on import
-with open(creds_file_name, 'rb') as f:
-    sobj = f.read()
-bots_jo = json.loads(sobj)
+if os.path.exists(creds_file_name):
+    #load the credentials always on import
+    with open(creds_file_name, 'rb') as f:
+        sobj = f.read()
+    bots_jo = json.loads(sobj)
+else:
+    #empty file, first install
+    bots_jo =  {'default_bot': '', 'user': '', 'default_chat': '', 'chats': [{}], 'bots': [{}]}
+
 selected_bot = bots_jo["default_bot"]
 selected_chat = bots_jo["default_chat"]
 chats_list = bots_jo['chats'][0]
