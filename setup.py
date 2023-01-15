@@ -43,7 +43,7 @@ setup(
         'Topic :: Communications :: User Interaction',
         'Topic :: Telegram'
     ],
-    packages=['telenotify'],
+    packages=find_packages(include=['telenotify','telenotify.telegram_bots']),
     entry_points={
         'console_scripts': 'telenotify = telenotify.__main__:main'
     },
