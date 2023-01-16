@@ -39,6 +39,7 @@ These will be used system wide and no further configuration should be necessary.
 ## Usage from bash
 
 BOT_NAME is optional will define which bot the notifications will come, if not present will use the default.
+
 NICKNAME is optional will define which user will receive the message/file.
 
 Send notification to user from bash:
@@ -47,11 +48,11 @@ Send notification to user from bash:
 
 Ask user a question and wait for reply:
 
-`telequestion #BOT_NAME# #NICKNAME# QUESTION`
+`telequestion #BOT_NAME# #NICKNAME# Question`
 
 Send broadcast message to all users in the configuration:
 
-`telebroad #BOT_NAME# MESSAGE`
+`telebroad #BOT_NAME# Message`
 
 Send broadcast message to all users in the configuration:
 
