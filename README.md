@@ -3,7 +3,7 @@
 [![MIT License](http://img.shields.io/badge/license-MIT%20License-blue.svg)](https://github.com/s-razoes/updog/blob/master/LICENSE)
 
 
-telenotify is a simple telegram, no webhook, user interaction python module and simple for being used from the command line.
+telenotify is a simple telegram, no webhook, user interaction python module able to be used from the command line.
 
 ## Installation
 
@@ -59,3 +59,36 @@ Send broadcast message to all users in the configuration:
 `telefile #BOT_NAME# #NICKNAME# FILE_PATH`
 
 ![screenshot](https://raw.githubusercontent.com/s-razoes/telenotify/master/example_question.png)
+
+## Usage from python scripts
+
+Again, the BOT_NAME and CHAT_ID are optional.
+
+Import:
+
+    from telenotify import user_interaction
+
+Notification:
+
+    user_interaction.send_notification('hey!', '#BOT_NAME#',nickname='#CHAT_ID#')
+
+Broadcast message to all chats:
+
+    user_interaction.send_broadcast('Major anouncement', #BOT_NAME#)
+
+Ask user input:
+
+    response = user_interaction.question('How are you?',bot_name='#BOT_NAME#', nickname='#CHAT_ID#')
+
+Choice for the authenticated user:
+
+    choice = user_interaction.wait_for_choice(options=['Ok','Cancel'],bot_name='#BOT_NAME#',prompt="What should we do next?")
+    
+    if choice == 'Cancel':
+        print('User cancelled')
+    if choice == 'Ok':
+        print('User confirmed')`
+
+Send file:
+
+    user_interaction.send_document(FILE_PATH, '#BOT_NAME#',nickname='#CHAT_ID#')

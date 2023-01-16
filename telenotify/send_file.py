@@ -2,7 +2,7 @@ import sys
 from telenotify import user_interaction
 
 def send_file(msg,bot_name=None,chat=None):
-    return user_interaction.sendDocument(document_path=msg,bot_name=bot_name, nickname=chat)
+    return user_interaction.send_document(document_path=msg,bot_name=bot_name, nickname=chat)
 
 def main():
     if len(sys.argv) == 1:

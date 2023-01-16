@@ -250,7 +250,7 @@ def polling(bot_name=None, user_reminder = 0, max_wait=MAX_WAIT, incremental_wai
     return None
 
 
-def sendDocument(document_path, bot_name=None, nickname=None):
+def send_document(document_path, bot_name=None, nickname=None):
     creds_manager.select_chat(nickname)
     if os.path.exists(document_path) is False:
         return f"File {document_path} does not exist."
