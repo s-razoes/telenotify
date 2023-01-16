@@ -4,7 +4,7 @@ from telenotify.telegram_bots import creds_manager
 
 def main():
     parser = argparse.ArgumentParser(description='Telegram bots credential manager.') 
-    parser.add_argument('-ab', required=False, help="add bot")
+    parser.add_argument('-ab', required=False, help="add bot or replace token")
     parser.add_argument('-rb', required=False, help="remove bot")
     parser.add_argument('-db', required=False, help="defines the bot as default")
     parser.add_argument('-au', required=False, help="add user")

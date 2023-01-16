@@ -26,7 +26,7 @@ After install should be empty.
 
 You should have at least one chat and one bot for it to function properly.
 
-To add your bot and token:
+To add your bot and token (or to just replace the token):
 
 `python3 -m telenotify.telegram_bots -ab #BOT_NAME# -t #TOKEN#`
 
