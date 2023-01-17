@@ -283,25 +283,32 @@ def get_last_offset():
         return offset
     #only necessary for the first run
     if offset is None:
-        #resist network failures
-        fail_counts = 0
-        while True:
-            r = get_request("getUpdates")
-            if type(r) == str:
-                time.sleep(max_wait)
-                fail_counts = fail_counts + 1
-                log_error(f"Get last offset failed {r}")
-                if fail_counts > MAX_RETRY:
-                    log_error(f"Cancelling get last offset: {f}")
-                    return None
-                continue
-            break
-        results = r.json()['result']
+        update = get_updates()
+        if update is None:
+            return None
+        results = update['result']
         offset = 0
         if len(results) > 0:
             for result in results:
                 offset = result['update_id'] + 1
     return offset
+
+
+def get_updates():
+    #resist network failures
+    fail_counts = 0
+    while True:
+        r = get_request("getUpdates")
+        if type(r) == str:
+            time.sleep(max_wait)
+            fail_counts = fail_counts + 1
+            log_error(f"Get last offset failed {r}")
+            if fail_counts > MAX_RETRY:
+                log_error(f"Cancelling get last offset: {f}")
+                return None
+            continue
+        break
+    return r.json()
 
 
 def flush_chat():
