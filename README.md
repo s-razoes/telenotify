@@ -75,7 +75,7 @@ Send broadcast message to all users in the configuration:
 telebroad BOT_NAME Message
 ```
 
-Send broadcast message to all users in the configuration:
+Send file from system to user:
 
 ```bash
 telefile BOT_NAME USER_NAME FILE_PATH
