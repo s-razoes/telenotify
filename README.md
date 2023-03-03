@@ -92,3 +92,34 @@ Choice for the authenticated user:
 Send file:
 
     user_interaction.send_document(FILE_PATH, '#BOT_NAME#',nickname='#CHAT_ID#')
+
+
+# First time set up
+
+After install and creating a bot you'll need to add the tokens and chats using these commands.
+
+### Add bot or replace the token:
+
+`python3 -m telenotify.telegram_bots -ab BOT_NAME -t TOKEN`
+
+The bot name is the one being called from the scripts
+
+### Set bot as default, if there's only one, this is uncessary:
+
+`python3 -m telenotify.telegram_bots -db BOT_NAME`
+
+### Add chat (aka user):
+
+`python3 -m telenotify.telegram_bots -au USER_NAME -t CHAT_ID`
+
+### Set user as authenticated user, if there's only one this step is uncessary:
+
+`python3 -m telenotify.telegram_bots -su USER_NAME`
+
+### Set user as default, if there's only one this step is uncessary:
+
+`python3 -m telenotify.telegram_bots -du USER_NAME`
+
+## To create a bot:
+
+https://learn.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-telegram
