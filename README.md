@@ -10,7 +10,7 @@
 Install using pip:
 
 ```bash
-pip3 install git+https://github.com/s-razoes/telenotify`
+pip3 install git+https://github.com/s-razoes/telenotify
 ```
 
 Afterward don't forget to add the credentials, these will be used system wide and no further configuration should be necessary.
